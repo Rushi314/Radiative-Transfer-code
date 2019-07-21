@@ -2,16 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.integrate as integrate
 
-h=6.626e-34
-c=3.0e8
-k=1.38e-23
-G=6.673e-11
+h=6.626e-34 #Planks constant
+c=3.0e8 #Velocity of light in vaccum
+k=1.38e-23 #Boltzmann constant
+G=6.673e-11 #Gravitational constant
 
-T_ex=10
-T_kin=10
-T_bg=2.7
+T_ex=10 #Exitation temperature
+T_kin=10 #Kinetic temperature
+T_bg=2.7 #CMB temperature
 
-amu=1.66e-27
+amu=1.66e-27 #Atomic mass unit
 m=2*amu #of Hydrogen molecule
 mass_number=28 #of CO tracer
 mass=mass_number*amu
@@ -20,21 +20,21 @@ nu0=115.3e9 #J1->J0 line frequency of CO
 
 XCO=1.0e-4 #fraction of CO
 A10=7.67e-8
-BA10=A10/(8*np.pi*h*nu0**3/c**3)
+BA10=A10/(8*np.pi*h*nu0**3/c**3) #Einstein coefficients for emmission
 g1=3 #degeneracy of upper level
 g0=1 #degeneracy of lower level
-BA01=(g1/g0)*BA10
+BA01=(g1/g0)*BA10 #Einstein coefficients for absorption
 L=24*3.0e16 #2 pc diameter
 R=L/(2*3.0e16) #Radius of molecular cloud in pc
 
 vc=0 #m/s
-dopp=np.sqrt(1-(vc/c)**2)/(1-(vc/c)) #verify
+dopp=np.sqrt(1-(vc/c)**2)/(1-(vc/c)) #Doppler
 
 #print dopp
 
-def nr(i,x):
+def nr(i,x): #Gaussian number density profile
     x=x/3.0e16 #m to pc
-    d=np.sqrt(x**2)#+yoffset**2+zoffset**2)
+    d=np.sqrt(x**2)+yoffset**2+zoffset**2)
     d=d*3.0e16 #pc to m
     return n0H2[i]*(n0H2[i]/1e6)**(-4*d**2/L**2)
 '''
@@ -47,17 +47,17 @@ def Nr(i,x):
        #print x/3e16
        return -integrate.quad(N,0,x)[0]
 '''
-def num(i,x):
+def num(i,x): 
     return XCO*nr(i,x)
 
 '''
-def Nr(i,x): #uniform density
+def Nr(i,x):#derivative of numberdensity #uniform density
     if x>=0:
        return (4/3)*n0H2[i]*np.pi*x**3
     if x<0:
        return -(4/3)*n0H2[i]*np.pi*x**3
 
-def vel(i,x):
+def vel(i,x): #Velocity profile for gravitational collapse
     vr=lambda x: -2*G*m*Nr(i,x)/x**2
     if x>0:
        return np.sqrt(-integrate.quad(vr, 0, x)[0])
@@ -78,16 +78,16 @@ def vel(i,x):
        return np.sqrt(-vr)
 '''
 
-def vel(i,x): #This profile is modified for 12 pc molecular cloud
+def vel(i,x): #Velocity profile(Considering rotation of cloud) 
     x=x/3.0e16  #m to pc
-    d=np.sqrt(x**2)#+yoffset**2+zoffset**2)
+    d=np.sqrt(x**2)+yoffset**2+zoffset**2)
     if x==0 and d==0:
        return -(3**i)*(1000/R)*d/np.exp((10/R)*d)
     if x>=0 and d!=0:
-       return -(3**i)*(1000/R)*d/np.exp((10/R)*d)#*(x/d)-omega*yoffset*3.0e16
+       return -(3**i)*(1000/R)*d/np.exp((10/R)*d)*(x/d)-omega*yoffset*3.0e16
     if x<0:
        d=-d
-       return -(3**i)*(1000/R)*d/np.exp(-(10/R)*d)#*(x/d)-omega*yoffset*3.0e16
+       return -(3**i)*(1000/R)*d/np.exp(-(10/R)*d)*(x/d)-omega*yoffset*3.0e16
 
 '''
 def rot(i,x):
@@ -101,7 +101,7 @@ def rot(i,x):
        #print x/3e16, vr
        return -np.sqrt(-vt)
 '''
-def Temp(x): #This profile is modified for 12 pc molecular cloud
+def Temp(x): #Temperature profile for hot thick collapsing core and quasi static envelope
     x=x/3.0e16  #m to pc
     d=np.sqrt(x**2)#+yoffset**2+zoffset**2)
     if x>=0:
@@ -111,7 +111,7 @@ def Temp(x): #This profile is modified for 12 pc molecular cloud
        return 10+5/(1+(00.001/R)*np.exp(-(50/R)*d))
 
 '''
-def Temp(x):
+def Temp(x): # Gradually varing temperature profile across cloud 
     x=x/3.0e16  #m to pc
     if x>=0:
        return 15-8.64e-5*np.exp(10.966*x)
@@ -120,28 +120,28 @@ def Temp(x):
        return 15-8.64e-5*np.exp(-10.966*x)
        #return 10+8.64e-5*np.exp(-10.966*x)
 '''
-def lp(nu,nu0,x):
+def lp(nu,nu0,x): #Doppler widened(Gaussian) spectral line profile
     #print x/3e16
     sigma=nudisp(x)
     return 1/(sigma*np.sqrt(2*np.pi))*np.exp(-(nu-nu0)**2/(2*sigma**2)) #normalized normal distribution
 
-def opac(nu,i,x):
+def opac(nu,i,x): #Opacity function
     Temper=Temp(x)
     Number=num(i,x)
     num1=Number/(1+(g0/g1)*np.exp(h*nu0/(k*Temper)))
     num0=Number/(1+(g1/g0)*np.exp(-h*nu0/(k*Temper)))
     return (num0*BA01-num1*BA10)*(h*nu0/c)*lp(nu,(nu0+delnu(i,x)),x) #delnu(i,x) takes time; this gives the wedge shape
 
-def delnu(i,x):
+def delnu(i,x): 
     return -nu0*vel(i,x)/c
 
-def vdisp(x):
+def vdisp(x): #Velocity dispersion
     return np.sqrt(k*Temp(x)/mass)
 
-def nudisp(x):
+def nudisp(x): #Frequency dispersion
     return nu0*vdisp(x)/c
 
-def J(T,nu):
+def J(T,nu): 
     """ Return Planck function """
     return (h/k)*nu/(np.exp((h/k)*(nu/T))-1)
 
@@ -154,7 +154,7 @@ def taufix(tau0,nu,nu_disp):
     return tau0*np.exp(-(nu-nu0)**2/(2*nu_disp**2))
 
 nH2=[1e7,1e8,1e9,1e10] #number density of H2 in m-3
-n0H2=[1.97824e7,2.66935e8,3.20622e9,3.65764e10]
+n0H2=[1.97824e7,2.66935e8,3.20622e9,3.65764e10] #number density of OH2 in m-3
 
 ntotal=np.zeros([len(nH2)])
 for i in range(len(nH2)):
@@ -177,7 +177,7 @@ resolution=(nu_stop-nu_start)/numsteps
 deltanu=(vc/c)*nu0
 nushift=np.linspace(nu_start-deltanu, nu_stop-deltanu, numsteps)
 
-def tauget(i,x,q):
+def tauget(i,x,q): #Optical Depth from x to the edge of the cloud
     #taunux=np.linspace(-hc,hc,numsteps)
     #for j in range(numsteps): #j loop (inner)
     ns=lambda s: opac(nu[q],i,s)
@@ -185,7 +185,7 @@ def tauget(i,x,q):
     #at the end of j loop, we get tau profile (array) at a point along LOS in cloud
     return taunux
 
-def rt(i,nu): #nu is an array here
+def rt(i,nu): #Radiative transfer equation
     #delnu=np.zeros([numsteps])
     radtemp1=np.zeros([numsteps])
     radtemp2=np.zeros([numsteps])
@@ -197,7 +197,7 @@ def rt(i,nu): #nu is an array here
     #print radtemp1[numsteps/2]
     return radtemp1
 #position=np.linspace(-L/2,L/2,numsteps)
-#for i in range(4):
+#for i in range(4): #check various line profiles
 #    radvel=np.zeros([numsteps])
 #    numcum=np.zeros([numsteps])
 #    numden=np.zeros([numsteps])
@@ -219,9 +219,9 @@ def rt(i,nu): #nu is an array here
 #plt.xlabel('position')
 #plt.ylabel('radial velocity of layer')
 
-yslices=5
+yslices=5 #Equal width slices of molecular cloud in y-axis
 ygap=1./yslices
-zslices=5
+zslices=5 #Equal width slices of molecular cloud in z-axis
 zgap=1./zslices
 
 for i in [3]:
@@ -235,7 +235,7 @@ for i in [3]:
         yslices=int(round(np.sqrt(1-(zp*zgap)**2)/ygap))
         #total_yslices=total_yslices+yslices
         #print yslices
-    #print total_yslices
+        #print total_yslices
         los_zoffset=zp*zgap #fraction of radius L/2
         zoffset=los_zoffset*(L/2)/3.0e16 #in pc
         for yp in range(yslices):
