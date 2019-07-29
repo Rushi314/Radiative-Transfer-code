@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.integrate as integrate
 
-h=6.626e-34 #Planks constant
+h=6.626e-34 #Planck constant
 c=3.0e8 #Velocity of light in vaccum
 k=1.38e-23 #Boltzmann constant
 G=6.673e-11 #Gravitational constant
