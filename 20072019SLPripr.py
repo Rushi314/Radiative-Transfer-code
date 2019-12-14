@@ -37,16 +37,7 @@ def nr(i,x):
     d=np.sqrt(x**2)#+yoffset**2+zoffset**2)
     d=d*3.0e16 #pc to m
     return n0H2[i]*(n0H2[i]/1e6)**(-4*d**2/L**2)
-'''
-def Nr(i,x):
-    N=lambda x: nr(i,x)*4*np.pi*x**2
-    if x>=0:
-       #print x/3e16
-       return integrate.quad(N,0,x)[0]
-    if x<0:
-       #print x/3e16
-       return -integrate.quad(N,0,x)[0]
-'''
+
 def num(i,x):
     return XCO*nr(i,x)
 
@@ -89,18 +80,7 @@ def vel(i,x): #This profile is modified for 12 pc molecular cloud
        d=-d
        return -(3**i)*(1000/R)*d/np.exp(-(10/R)*d)#*(x/d)-omega*yoffset*3.0e16
 
-'''
-def rot(i,x):
-    if x==0:
-       return 0
-    vt=G*m*Nr(i,x)/x-vel(i,x)**2
-    if x>0:
-       #print x/3e16, vr
-       return np.sqrt(vt)
-    if x<0:
-       #print x/3e16, vr
-       return -np.sqrt(-vt)
-'''
+
 def Temp(x): #This profile is modified for 12 pc molecular cloud
     x=x/3.0e16  #m to pc
     d=np.sqrt(x**2)#+yoffset**2+zoffset**2)
@@ -110,16 +90,7 @@ def Temp(x): #This profile is modified for 12 pc molecular cloud
        d=-d
        return 10+5/(1+(00.001/R)*np.exp(-(50/R)*d))
 
-'''
-def Temp(x):
-    x=x/3.0e16  #m to pc
-    if x>=0:
-       return 15-8.64e-5*np.exp(10.966*x)
-       #return 10+8.64e-5*np.exp(10.966*x)
-    if x<0:
-       return 15-8.64e-5*np.exp(-10.966*x)
-       #return 10+8.64e-5*np.exp(-10.966*x)
-'''
+
 def lp(nu,nu0,x):
     #print x/3e16
     sigma=nudisp(x)
@@ -234,8 +205,6 @@ for i in [3]:
         ytotal=0
         yslices=int(round(np.sqrt(1-(zp*zgap)**2)/ygap))
         #total_yslices=total_yslices+yslices
-        #print yslices
-    #print total_yslices
         los_zoffset=zp*zgap #fraction of radius L/2
         zoffset=los_zoffset*(L/2)/3.0e16 #in pc
         for yp in range(yslices):
@@ -246,7 +215,6 @@ for i in [3]:
                 hc=L/2*np.cos(np.arcsin(los_zoffset))*np.cos(np.arcsin(los_yoffset/np.cos(np.arcsin(los_zoffset)))) #half-chord (semi-chord)
                 #possteps=int(2*hc*L/numsteps)
                 #position=np.linspace(-hc,hc,possteps) #possteps depend on offset?
-                #print hc,offset
                 #opdep=np.zeros([numsteps])
                 T_mb=np.zeros([numsteps])
                 Tfix_mb=np.zeros([numsteps])
@@ -266,9 +234,9 @@ for i in [3]:
         T_mb_zsum=T_mb_zsum+T_mb_ysum*zweight
     T_mb_zsum=T_mb_zsum/ztotal
     plt.subplot(2,2,i+1)
-    #plt.plot(nushift/10000,opdep,'k-',linewidth=.5,label=r'nH2=%.0f cm$^{-3}$'%(nH2[i]/1e6))
-    #plt.plot(nushift/10000,tauget(i,nu),'k-',linewidth=.5,label=r'nH2=%.0f cm$^{-3}$'%(nH2[i]/1e6))
-    #plt.plot(nu/10000,Tfix_mb,'b--',linewidth=.5)
+    plt.plot(nushift/10000,opdep,'k-',linewidth=.5,label=r'nH2=%.0f cm$^{-3}$'%(nH2[i]/1e6))
+    plt.plot(nushift/10000,tauget(i,nu),'k-',linewidth=.5,label=r'nH2=%.0f cm$^{-3}$'%(nH2[i]/1e6))
+    plt.plot(nu/10000,Tfix_mb,'b--',linewidth=.5)
     plt.plot(nu/10000,T_mb_zsum,'k-',linewidth=.5,label=r'nH2=%.0f cm$^{-3}$'%(nH2[i]/1e6)) #for m^3 format: r'nH2=%.1e m$^{-3}$'%nH2[i]
     plt.legend(loc=1,frameon=False)
     plt.xlabel('frequency ($10^4$ Hz)')
